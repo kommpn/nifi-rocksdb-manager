@@ -1,0 +1,5 @@
+[pool-3-thread-1] ERROR it.org.nifi.rocksdbmanager.processors.RocksDbWriter - RocksDbWriter[id=53a242cf-b546-4fc8-a50e-ad00dddccc4a] ho letto il valore, è: questo è un test
+[pool-3-thread-1] ERROR it.org.nifi.rocksdbmanager.processors.RocksDbWriter - RocksDbWriter[id=53a242cf-b546-4fc8-a50e-ad00dddccc4a] sto chiamando il service.
+[pool-3-thread-1] ERROR it.org.nifi.rocksdbmanager.services.RocksDbService - RocksDbService[id=service] value preso, valore: questo è un test
+[pool-3-thread-1] ERROR it.org.nifi.rocksdbmanager.processors.RocksDbWriter - RocksDbWriter[id=53a242cf-b546-4fc8-a50e-ad00dddccc4a] ho scritto.
+[pool-3-thread-1] ERROR it.org.nifi.rocksdbmanager.processors.RocksDbWriter - RocksDbWriter[id=53a242cf-b546-4fc8-a50e-ad00dddccc4a] fammi vedere com'è formata la tupla, org.apache.nifi.util.Tuple@90ebb7d6
