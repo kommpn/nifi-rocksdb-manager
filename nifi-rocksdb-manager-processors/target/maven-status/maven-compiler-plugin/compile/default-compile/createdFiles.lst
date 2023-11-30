@@ -1,0 +1,5 @@
+it/org/nifi/rocksdbmanager/utils/RocksDbLookupService.class
+it/org/nifi/rocksdbmanager/processors/RocksDbWriter.class
+it/org/nifi/rocksdbmanager/services/RocksDbService.class
+it/org/nifi/rocksdbmanager/processors/RocksDbReader.class
+it/org/nifi/rocksdbmanager/utils/LookupService.class
