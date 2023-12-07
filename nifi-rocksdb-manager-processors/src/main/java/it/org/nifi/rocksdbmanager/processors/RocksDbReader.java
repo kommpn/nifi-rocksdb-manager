@@ -149,6 +149,7 @@ public class RocksDbReader extends AbstractProcessor {
                 outputStream.write(lookupResult.getBytes(StandardCharsets.UTF_8));
             });
             session.transfer(flowFile, REL_SUCCESS);
+
         } else if (FLOWFILE_ATTRIBUTE.equals(resultDestination)) {
             session.putAttribute(flowFile, "rocksdb.search.key", key);
             session.putAttribute(flowFile, "rocksdb.search.value", lookupResult);
