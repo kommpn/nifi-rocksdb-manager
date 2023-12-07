@@ -21,10 +21,13 @@ public class PropertyDescriptorUtils {
                     "be routed to this relationship")
             .build();
 
+
+    public static final String READANDWRITE = "Read And Write";
+    public static final String READONLY = "Read Only";
     public static final String FIND = "Find";
     public static final String ITERATOR = "RocksIterator";
-    public static final String ACTION_SEARCH = "search";
-    public static final String ACTION_WRITE = "write";
+    public static final String FLOWFILE_ATTRIBUTE = "FlowFile Attribute";
+    public static final String FLOWFILE_CONTENT = "FlowFile Content";
     public static final String SEEK_PREV = "Seek Prev";
     public static final String SEEK_NEXT = "Seek Next";
     public static final String SEEK_FOR_PREV = "Seek For Prev";

@@ -16,38 +16,56 @@ package it.org.nifi.rocksdbmanager.processors;/*
  */
 
 
-import it.org.nifi.rocksdbmanager.services.RocksDbService;
+import it.org.nifi.rocksdbmanager.services.RocksDbServiceRocks;
+import it.org.nifi.rocksdbmanager.utils.RocksDbUtils;
 import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
 import org.apache.nifi.util.file.FileUtils;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
-import static it.org.nifi.rocksdbmanager.processors.RocksDbReader.FLOWFILE_CONTENT;
 import static it.org.nifi.rocksdbmanager.utils.PropertyDescriptorUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ProcessorsAndServiceTest {
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class ProcessorsAndServiceTest {
 
+    private static final String DB_NAME = "./rockstest";
     private TestRunner testRunner;
 
+    @BeforeAll
+    public static void setup() throws Exception {
+        RocksDbUtils rocksDbUtils = new RocksDbUtils();
+        HashMap<String, String> optionsMap = new HashMap<>() {{
+            put("setCreateIfMissing", "true");
+        }};
+        rocksDbUtils.initDbWrite(DB_NAME, optionsMap);
+        rocksDbUtils.resetDb();
+    }
+
+    @AfterAll
+    public static void deleteDb() throws IOException {
+        FileUtils.deleteFile(new File(DB_NAME), true);
+    }
+
+    @Order(1)
     @Test
     public void testWriter() throws InitializationException {
-        RocksDbService rocksDbService = new RocksDbService();
+        RocksDbServiceRocks rocksDbService = new RocksDbServiceRocks();
         testRunner = TestRunners.newTestRunner(RocksDbWriter.class);
         testRunner.addControllerService("service", rocksDbService);
-        testRunner.setProperty(rocksDbService, RocksDbService.DATABASE_PATH, "./rockstest");
-        testRunner.setProperty(rocksDbService, RocksDbService.OPEN_MODE, "everything");
-        testRunner.setProperty(rocksDbService, "setCreateIfMissing", "true");
+        testRunner.setProperty(rocksDbService, RocksDbServiceRocks.DATABASE_PATH, "./rockstest");
+        testRunner.setProperty(rocksDbService, RocksDbServiceRocks.OPEN_MODE, READANDWRITE);
         testRunner.enableControllerService(rocksDbService);
         testRunner.setProperty(RocksDbWriter.ROCKSDB_SERVICE, "service");
         testRunner.setProperty(RocksDbWriter.SAVE_FROM, FLOWFILE_CONTENT);
         testRunner.setProperty(RocksDbWriter.KEY, "thisisatest");
-        testRunner.enqueue("this is a real test");
+        testRunner.enqueue("{\"ip\":\"192.168.0.1\"}");
         testRunner.run();
         testRunner.disableControllerService(rocksDbService);
 
@@ -56,13 +74,14 @@ public class ProcessorsAndServiceTest {
                 "true");
     }
 
+    @Order(2)
     @Test
-    public void testReader() throws InitializationException, IOException {
-        RocksDbService rocksDbService = new RocksDbService();
+    public void testReader() throws InitializationException {
+        RocksDbServiceRocks rocksDbService = new RocksDbServiceRocks();
         testRunner = TestRunners.newTestRunner(RocksDbReader.class);
         testRunner.addControllerService("service", rocksDbService);
-        testRunner.setProperty(rocksDbService, RocksDbService.DATABASE_PATH, "./rockstest");
-        testRunner.setProperty(rocksDbService, RocksDbService.OPEN_MODE, "readOnly");
+        testRunner.setProperty(rocksDbService, RocksDbServiceRocks.DATABASE_PATH, DB_NAME);
+        testRunner.setProperty(rocksDbService, RocksDbServiceRocks.OPEN_MODE, READONLY);
         testRunner.enableControllerService(rocksDbService);
         testRunner.setProperty(RocksDbReader.ROCKSDB_SERVICE, "service");
         testRunner.setProperty(RocksDbReader.SEARCH_TYPE, FIND);
@@ -71,10 +90,9 @@ public class ProcessorsAndServiceTest {
         testRunner.enqueue("");
         testRunner.run();
         testRunner.disableControllerService(rocksDbService);
-        FileUtils.deleteFile(new File("./rockstest"), true);
         MockFlowFile flowFile = testRunner.getFlowFilesForRelationship(REL_SUCCESS).get(0);
         assertEquals(flowFile.getAttribute("rocksdb.search.value"),
-                "this is a real test");
+                "{\"ip\":\"192.168.0.1\"}");
     }
 
 }
