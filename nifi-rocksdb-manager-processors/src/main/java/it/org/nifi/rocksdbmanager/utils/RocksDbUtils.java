@@ -1,7 +1,5 @@
 package it.org.nifi.rocksdbmanager.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.nifi.util.Tuple;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -10,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.SerializationUtils;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
@@ -59,7 +58,7 @@ public class RocksDbUtils {
 
     }
 
-    private Options loadOptions(HashMap<String, String> optionsMap) throws Exception {
+    private Options loadOptions(HashMap<String, String> optionsMap) throws IllegalArgumentException, InvocationTargetException, IllegalAccessException {
         RocksDB.loadLibrary();
         Options options = new Options();
         for (Method declaredMethod : options.getClass().getDeclaredMethods()) {
@@ -88,30 +87,26 @@ public class RocksDbUtils {
                         continue;
                     }
                 }
-                throw new Exception("Wrong argument value passed");
+                throw new IllegalArgumentException("Wrong argument value passed");
             }
         }
 
         return options;
     }
 
-    public synchronized Tuple<String, String> saveEntry(byte[] key, String value) {
-        try {
-            db.put(key, SerializationUtils.serialize(value));
-            return new Tuple<>("success", "true");
-        } catch (RocksDBException ex) {
-            return new Tuple<>("failure", ex.getMessage());
-        }
+    public synchronized void saveEntry(byte[] key, String value) throws RocksDBException {
+
+        db.put(key, SerializationUtils.serialize(value));
+
 
     }
 
-    public synchronized Tuple<String, String> find(String key) throws RocksDBException {
+    public synchronized String find(String key) throws RocksDBException {
         Optional<Object> result = Optional.ofNullable(SerializationUtils.deserialize(db.get(key.getBytes(StandardCharsets.UTF_8))));
-        return result.map(o -> new Tuple<>(key,
-                o.toString())).orElse(null);
+        return result.map(Object::toString).orElse(null);
     }
 
-    public synchronized Tuple<String, String> findIterator(String key, String seekFor) throws RocksDBException {
+    public synchronized String findIterator(String key, String seekFor) throws RocksDBException {
         try (RocksIterator it = this.db.newIterator()) {
             if (SEEK_PREV.equals(seekFor)) {
                 it.seek(key.getBytes(StandardCharsets.UTF_8));
@@ -134,18 +129,18 @@ public class RocksDbUtils {
                 }
                 return getString(key, seekFor, it);
             }
-        } catch (JsonProcessingException e) {
+        } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }
         return null;
     }
 
-    private Tuple<String, String> getString(String key, String seekFor, RocksIterator it) throws JsonProcessingException, RocksDBException {
+    private String getString(String key, String seekFor, RocksIterator it) throws RocksDBException {
         if (it.isValid()) {
 
-            return new Tuple<>(new String(it.key()),
+            return
                     Objects.requireNonNull(SerializationUtils.deserialize(it.value())).toString()
-                            .replace("\\\"", "\""));
+                            .replace("\\\"", "\"");
         } else {
             throw new RocksDBException("Error while searching for " + key + " value with " + seekFor + " method.");
         }

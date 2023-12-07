@@ -17,8 +17,8 @@
 package it.org.nifi.rocksdbmanager.processors;
 
 import it.org.nifi.rocksdbmanager.exception.LookupFailureException;
-import it.org.nifi.rocksdbmanager.services.RocksDbService;
-import it.org.nifi.rocksdbmanager.utils.RocksDbLookupService;
+import it.org.nifi.rocksdbmanager.services.RocksDbServiceRocks;
+import it.org.nifi.rocksdbmanager.utils.RocksDbRocksLookupService;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
 import org.apache.nifi.annotation.behavior.WritesAttributes;
@@ -35,35 +35,33 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.util.Tuple;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static it.org.nifi.rocksdbmanager.processors.RocksDbReader.FLOWFILE_ATTRIBUTE;
-import static it.org.nifi.rocksdbmanager.processors.RocksDbReader.FLOWFILE_CONTENT;
 import static it.org.nifi.rocksdbmanager.utils.PropertyDescriptorUtils.*;
 
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
-@Tags({"rocksdb","writer"})
+@Tags({"rocksdb", "writer"})
 @CapabilityDescription("Processor that allows user to write custom key/values inside a RocksDb using a RocksDbService.")
-@SeeAlso({RocksDbReader.class, RocksDbService.class})
-@WritesAttributes({@WritesAttribute(attribute="rocksdb.write.success",
-        description="true or false, determines if the writing has been successful"),
-        @WritesAttribute(attribute="rocksdb.write.error",
-                description="contains the error occurred when writing to RocksDB")})
+@SeeAlso({RocksDbReader.class, RocksDbServiceRocks.class})
+@WritesAttributes({@WritesAttribute(attribute = "rocksdb.write.success",
+        description = "true or false, determines if the writing has been successful"),
+        @WritesAttribute(attribute = "rocksdb.write.error",
+                description = "contains the error occurred when writing to RocksDB")})
 public class RocksDbWriter extends AbstractProcessor {
-
-   protected volatile RocksDbLookupService lookupService;
 
     public static final PropertyDescriptor ROCKSDB_SERVICE = new PropertyDescriptor
             .Builder().name("rocksdb-service")
             .displayName("RocksDB Service")
             .description("Designed Rocksdb to utilize")
             .required(true)
-            .identifiesControllerService(RocksDbLookupService.class)
+            .identifiesControllerService(RocksDbRocksLookupService.class)
             .build();
 
     public static final PropertyDescriptor KEY = new PropertyDescriptor
@@ -84,7 +82,6 @@ public class RocksDbWriter extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .allowableValues(Set.of(FLOWFILE_ATTRIBUTE, FLOWFILE_CONTENT))
             .build();
-
     public static final PropertyDescriptor VALUE = new PropertyDescriptor
             .Builder().name("value")
             .displayName("Value")
@@ -95,9 +92,10 @@ public class RocksDbWriter extends AbstractProcessor {
             .expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)
             .build();
 
-
     private final Set<Relationship> relationships = Set.of(REL_SUCCESS,
             REL_FAILURE);
+
+    protected volatile RocksDbRocksLookupService lookupService;
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -116,8 +114,8 @@ public class RocksDbWriter extends AbstractProcessor {
 
     @OnScheduled
     public void onScheduled(final ProcessContext context) {
-    this.lookupService = context.getProperty(ROCKSDB_SERVICE)
-            .asControllerService(RocksDbLookupService.class);
+        this.lookupService = context.getProperty(ROCKSDB_SERVICE)
+                .asControllerService(RocksDbRocksLookupService.class);
     }
 
     @Override
@@ -132,45 +130,36 @@ public class RocksDbWriter extends AbstractProcessor {
         String saveFrom = context.getProperty(SAVE_FROM).getValue();
         String value = "";
 
-        if(FLOWFILE_ATTRIBUTE.equals(saveFrom)) {
-            value =  context.getProperty(VALUE).evaluateAttributeExpressions(flowFile).getValue();
-        } else if(FLOWFILE_CONTENT.equals(saveFrom)) {
-            try (InputStream is = session.read(flowFile)){
+        if (FLOWFILE_ATTRIBUTE.equals(saveFrom)) {
+            value = context.getProperty(VALUE).evaluateAttributeExpressions(flowFile).getValue();
+        } else if (FLOWFILE_CONTENT.equals(saveFrom)) {
+            try (InputStream is = session.read(flowFile)) {
                 value = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 session.transfer(flowFile, REL_FAILURE);
                 throw new RuntimeException(e);
             }
-        } if(value == null || value.isBlank()) {
+        }
+        if (value == null || value.isBlank()) {
             session.transfer(flowFile, REL_UNMATCHED);
             return;
         }
 
-        Optional<?> lookupResultOptional;
+
         try {
-            lookupResultOptional = lookupService.lookup(Map.of("action", ACTION_WRITE,
+            lookupService.write(Map.of(
                     "key", key,
                     "value", value
-                    ));
+            ));
         } catch (LookupFailureException e) {
             session.transfer(flowFile, REL_FAILURE);
             throw new RuntimeException(e);
         }
-        if(lookupResultOptional.isEmpty()) {
-            session.transfer(flowFile, REL_FAILURE);
-            return;
-        }
 
-        @SuppressWarnings("unchecked")
-        Tuple<String, String> lookupResult = (Tuple<String, String>) lookupResultOptional.get();
-        if(lookupResult.getKey().equals("success")) {
-            session.putAttribute(flowFile, "rocksdb.write.success", "true");
-            session.transfer(flowFile, REL_SUCCESS);
-        } else if(lookupResult.getKey().equals("failure")) {
-            session.putAttribute(flowFile, "rocksdb.write.success", "false");
-            session.putAttribute(flowFile, "rocksdb.write.error", lookupResult.getValue());
-            session.transfer(flowFile, REL_FAILURE);
-        }
+
+        session.putAttribute(flowFile, "rocksdb.write.success", "true");
+        session.transfer(flowFile, REL_SUCCESS);
+
 
     }
 }
