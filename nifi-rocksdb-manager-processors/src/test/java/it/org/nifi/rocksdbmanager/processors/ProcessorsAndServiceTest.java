@@ -1,4 +1,4 @@
-package it.org.nifi.rocksdbmanager.processors;/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,9 +15,13 @@ package it.org.nifi.rocksdbmanager.processors;/*
  * limitations under the License.
  */
 
+package it.org.nifi.rocksdbmanager.processors;
 
-import it.org.nifi.rocksdbmanager.services.RocksDbServiceRocks;
+import it.org.nifi.rocksdbmanager.services.RocksDbDistributedMapCacheClientService;
+import it.org.nifi.rocksdbmanager.services.RocksDbService;
 import it.org.nifi.rocksdbmanager.utils.RocksDbUtils;
+import org.apache.nifi.processors.standard.FetchDistributedMapCache;
+import org.apache.nifi.processors.standard.PutDistributedMapCache;
 import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
@@ -28,6 +32,7 @@ import org.junit.jupiter.api.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 import static it.org.nifi.rocksdbmanager.utils.PropertyDescriptorUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -56,11 +61,11 @@ class ProcessorsAndServiceTest {
     @Order(1)
     @Test
     public void testWriter() throws InitializationException {
-        RocksDbServiceRocks rocksDbService = new RocksDbServiceRocks();
+        RocksDbService rocksDbService = new RocksDbService();
         testRunner = TestRunners.newTestRunner(RocksDbWriter.class);
         testRunner.addControllerService("service", rocksDbService);
-        testRunner.setProperty(rocksDbService, RocksDbServiceRocks.DATABASE_PATH, "./rockstest");
-        testRunner.setProperty(rocksDbService, RocksDbServiceRocks.OPEN_MODE, READANDWRITE);
+        testRunner.setProperty(rocksDbService, RocksDbService.DATABASE_PATH, "./rockstest");
+        testRunner.setProperty(rocksDbService, RocksDbService.OPEN_MODE, READANDWRITE);
         testRunner.enableControllerService(rocksDbService);
         testRunner.setProperty(RocksDbWriter.ROCKSDB_SERVICE, "service");
         testRunner.setProperty(RocksDbWriter.SAVE_FROM, FLOWFILE_CONTENT);
@@ -77,11 +82,11 @@ class ProcessorsAndServiceTest {
     @Order(2)
     @Test
     public void testReader() throws InitializationException {
-        RocksDbServiceRocks rocksDbService = new RocksDbServiceRocks();
+        RocksDbService rocksDbService = new RocksDbService();
         testRunner = TestRunners.newTestRunner(RocksDbReader.class);
         testRunner.addControllerService("service", rocksDbService);
-        testRunner.setProperty(rocksDbService, RocksDbServiceRocks.DATABASE_PATH, DB_NAME);
-        testRunner.setProperty(rocksDbService, RocksDbServiceRocks.OPEN_MODE, READONLY);
+        testRunner.setProperty(rocksDbService, RocksDbService.DATABASE_PATH, DB_NAME);
+        testRunner.setProperty(rocksDbService, RocksDbService.OPEN_MODE, READONLY);
         testRunner.enableControllerService(rocksDbService);
         testRunner.setProperty(RocksDbReader.ROCKSDB_SERVICE, "service");
         testRunner.setProperty(RocksDbReader.SEARCH_TYPE, FIND);
@@ -94,5 +99,43 @@ class ProcessorsAndServiceTest {
         assertEquals(flowFile.getAttribute("rocksdb.search.value"),
                 "{\"ip\":\"192.168.0.1\"}");
     }
+
+    @Order(3)
+    @Test
+    public void testPut() throws InitializationException {
+        testRunner = TestRunners.newTestRunner(PutDistributedMapCache.class);
+        RocksDbDistributedMapCacheClientService rocksDbDistributedMapCacheClientService = new RocksDbDistributedMapCacheClientService();
+        testRunner.addControllerService("redis-map-cache-client", rocksDbDistributedMapCacheClientService);
+        testRunner.setProperty(rocksDbDistributedMapCacheClientService, RocksDbDistributedMapCacheClientService.DATABASE_PATH, DB_NAME);
+        testRunner.setProperty(rocksDbDistributedMapCacheClientService, RocksDbDistributedMapCacheClientService.OPEN_MODE, READANDWRITE);
+        testRunner.enableControllerService(rocksDbDistributedMapCacheClientService);
+
+        testRunner.setProperty(PutDistributedMapCache.DISTRIBUTED_CACHE_SERVICE, "redis-map-cache-client");
+        testRunner.setProperty(PutDistributedMapCache.CACHE_ENTRY_IDENTIFIER, "thisisatest");
+        testRunner.enqueue("{\"ip\":\"192.168.0.8\"}");
+        testRunner.run();
+        List<MockFlowFile> flowFileList = testRunner.getFlowFilesForRelationship(REL_SUCCESS);
+        assertEquals(flowFileList.size(), 1);
+    }
+
+
+    @Order(4)
+    @Test
+    public void testFetch() throws InitializationException {
+        testRunner = TestRunners.newTestRunner(FetchDistributedMapCache.class);
+        RocksDbDistributedMapCacheClientService rocksDbDistributedMapCacheClientService = new RocksDbDistributedMapCacheClientService();
+        testRunner.addControllerService("redis-map-cache-client", rocksDbDistributedMapCacheClientService);
+        testRunner.setProperty(rocksDbDistributedMapCacheClientService, RocksDbDistributedMapCacheClientService.DATABASE_PATH, DB_NAME);
+        testRunner.setProperty(rocksDbDistributedMapCacheClientService, RocksDbDistributedMapCacheClientService.OPEN_MODE, READONLY);
+        testRunner.enableControllerService(rocksDbDistributedMapCacheClientService);
+
+        testRunner.setProperty(FetchDistributedMapCache.PROP_DISTRIBUTED_CACHE_SERVICE, "redis-map-cache-client");
+        testRunner.setProperty(FetchDistributedMapCache.PROP_CACHE_ENTRY_IDENTIFIER, "thisisatest");
+        testRunner.enqueue("");
+        testRunner.run();
+        MockFlowFile flowFile = testRunner.getFlowFilesForRelationship(REL_SUCCESS).get(0);
+        assertEquals("{\"ip\":\"192.168.0.8\"}", new String(flowFile.getData()));
+    }
+
 
 }

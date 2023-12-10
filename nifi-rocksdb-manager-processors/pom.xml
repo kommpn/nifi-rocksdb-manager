@@ -52,5 +52,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.nifi</groupId>
+            <artifactId>nifi-standard-processors</artifactId>
+            <version>1.23.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
