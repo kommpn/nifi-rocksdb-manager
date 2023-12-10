@@ -17,7 +17,7 @@
 package it.org.nifi.rocksdbmanager.processors;
 
 import it.org.nifi.rocksdbmanager.exception.LookupFailureException;
-import it.org.nifi.rocksdbmanager.services.RocksDbServiceRocks;
+import it.org.nifi.rocksdbmanager.services.RocksDbService;
 import it.org.nifi.rocksdbmanager.utils.RocksDbRocksLookupService;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
@@ -49,7 +49,7 @@ import static it.org.nifi.rocksdbmanager.utils.PropertyDescriptorUtils.*;
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"rocksdb", "writer"})
 @CapabilityDescription("Processor that allows user to write custom key/values inside a RocksDb using a RocksDbService.")
-@SeeAlso({RocksDbReader.class, RocksDbServiceRocks.class})
+@SeeAlso({RocksDbReader.class, RocksDbService.class})
 @WritesAttributes({@WritesAttribute(attribute = "rocksdb.write.success",
         description = "true or false, determines if the writing has been successful"),
         @WritesAttribute(attribute = "rocksdb.write.error",

@@ -1,3 +1,0 @@
-[main] ERROR it.org.nifi.rocksdbmanager.services.RocksDbService - RocksDbService[id=service] RocksDB not initialized in everything mode, service cannot start.
-The error is:
- While lock file: /Users/giovannitroia/Workspace/test222/LOCK: Resource temporarily unavailable

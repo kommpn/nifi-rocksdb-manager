@@ -1,8 +1,10 @@
-/Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/services/RocksDbService.java
+/Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/utils/RocksLookupService.java
+/Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/services/RocksDbDistributedMapCacheClientService.java
 /Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/utils/PropertyDescriptorUtils.java
-/Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/utils/LookupService.java
+/Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/services/RocksDbServiceRocks.java
+/Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/services/SimpleRocksDbDistributedMapCacheClientService.java
 /Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/processors/RocksDbWriter.java
 /Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/exception/LookupFailureException.java
-/Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/utils/RocksDbLookupService.java
+/Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/utils/RocksDbRocksLookupService.java
 /Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/utils/RocksDbUtils.java
 /Users/giovannitroia/Workspace/nar/rocksdb-manager/nifi-rocksdb-manager-processors/src/main/java/it/org/nifi/rocksdbmanager/processors/RocksDbReader.java

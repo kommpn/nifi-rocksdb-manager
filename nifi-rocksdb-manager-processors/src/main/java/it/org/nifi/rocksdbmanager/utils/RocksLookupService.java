@@ -1,5 +1,3 @@
-package it.org.nifi.rocksdbmanager.utils;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,6 +15,7 @@ package it.org.nifi.rocksdbmanager.utils;
  * limitations under the License.
  */
 
+package it.org.nifi.rocksdbmanager.utils;
 
 import it.org.nifi.rocksdbmanager.exception.LookupFailureException;
 import org.apache.nifi.controller.ControllerService;

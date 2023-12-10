@@ -1,7 +1,24 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package it.org.nifi.rocksdbmanager.processors;
 
 import it.org.nifi.rocksdbmanager.exception.LookupFailureException;
-import it.org.nifi.rocksdbmanager.services.RocksDbServiceRocks;
+import it.org.nifi.rocksdbmanager.services.RocksDbService;
 import it.org.nifi.rocksdbmanager.utils.RocksDbRocksLookupService;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
@@ -28,7 +45,7 @@ import static it.org.nifi.rocksdbmanager.utils.PropertyDescriptorUtils.*;
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"rocksdb", "reader"})
 @CapabilityDescription("Processor that allows user to read key/values inside a RocksDb using a RocksDbService.")
-@SeeAlso({RocksDbReader.class, RocksDbServiceRocks.class})
+@SeeAlso({RocksDbReader.class, RocksDbService.class})
 @WritesAttributes({@WritesAttribute(attribute = "rocksdb.search.key",
         description = "Key found inside the RocksDb with given key."),
         @WritesAttribute(attribute = "rocksdb.search.value", description = "Value found inside the RocksDb with given key.")})

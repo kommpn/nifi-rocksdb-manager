@@ -1,5 +1,11 @@
-it/org/nifi/rocksdbmanager/utils/RocksDbLookupService.class
+it/org/nifi/rocksdbmanager/utils/RocksLookupService.class
 it/org/nifi/rocksdbmanager/processors/RocksDbWriter.class
-it/org/nifi/rocksdbmanager/services/RocksDbService.class
+it/org/nifi/rocksdbmanager/processors/RocksDbReader$1.class
 it/org/nifi/rocksdbmanager/processors/RocksDbReader.class
-it/org/nifi/rocksdbmanager/utils/LookupService.class
+it/org/nifi/rocksdbmanager/utils/RocksDbRocksLookupService.class
+it/org/nifi/rocksdbmanager/services/RocksDbDistributedMapCacheClientService.class
+it/org/nifi/rocksdbmanager/utils/RocksDbUtils.class
+it/org/nifi/rocksdbmanager/utils/PropertyDescriptorUtils.class
+it/org/nifi/rocksdbmanager/services/RocksDbServiceRocks.class
+it/org/nifi/rocksdbmanager/exception/LookupFailureException.class
+it/org/nifi/rocksdbmanager/services/SimpleRocksDbDistributedMapCacheClientService.class

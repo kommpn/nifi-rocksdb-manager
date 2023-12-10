@@ -20,15 +20,9 @@
     <parent>
         <groupId>org.nifi.rocksdb</groupId>
         <artifactId>rocksdb-manager</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <name>Central Repository OSSRH</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
+
     <artifactId>nifi-rocksdb-manager-nar</artifactId>
     <version>1.0.0</version>
     <packaging>nar</packaging>
@@ -43,17 +37,6 @@
             <artifactId>nifi-rocksdb-manager-processors</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-utils</artifactId>
-            <version>1.23.2</version>
-        </dependency>
-
     </dependencies>
 
 </project>
